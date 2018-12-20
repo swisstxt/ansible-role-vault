@@ -1,0 +1,11 @@
+{% if vault_enterprise_premium_hsm | bool -%}
+  {% include vault_seal_pkcs11 with context %}
+{% endif -%}
+
+{% if vault_gcpkms | bool - %}
+  {% include vault_seal_gcpkms with context %}
+{% endif -%}
+
+{% if vault_awskms | bool %}
+  {% include vault_seal_awskms with context %}
+{% endif -%}

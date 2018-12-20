@@ -1,0 +1,29 @@
+# Addresses and Names
+api_addr = "{{ vault_api_addr }}"
+disable_clustering = "{{ vault_cluster_disable }}"
+cluster_name = "{{ vault_cluster_name }}"
+cluster_addr = "{{ vault_cluster_addr }}"
+
+# Default system wide TTLs
+max_lease_ttl = "{{ vault_max_lease_ttl }}"
+default_lease_ttl = "{{ vault_default_lease_ttl }}"
+
+# Telemetry
+{% if vault_telemetry_enabled | bool -%}
+telemetry {
+  {% if vault_statsite_address is defined %}
+  statsite_address = "{{vault_statsite_address}}"
+  {% endif -%}
+  {% if vault_statsd_address is defined %}
+  statsd_address = "{{vault_statsd_address}}"
+  {% endif -%}
+  {% if vault_telemetry_disable_hostname is defined %}
+  disable_hostname = {{vault_telemetry_disable_hostname | bool | lower }}
+  {% endif -%}
+}
+{% endif -%}
+
+# Web User Interface
+{% if vault_ui -%}
+  ui = {{ vault_ui | bool | lower }}
+{% endif -%}

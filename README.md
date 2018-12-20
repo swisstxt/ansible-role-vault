@@ -101,6 +101,21 @@ The role defines variables in `defaults/main.yml`:
 - Log path - (not yet implemented)
 - Default value: `/var/log/vault`
 
+### `vault_storage_backend`
+
+- Storage backend; supported choices are: `consul`, `file`, and `mysql`
+- Default value: *consul*
+
+### `vault_storage_backend_consul`
+
+- Backend template filename for Consul based storage
+- Default value: *backend_consul.j2*
+
+### `vault_storage_backend_file`
+
+- Backend template filename for filesystem based storage
+- Default value: *backend_file.j2*
+
 ### `vault_run_path`
 
 - PID file location
@@ -165,7 +180,7 @@ The role defines variables in `defaults/main.yml`:
 ### `vault_consul_token`
 
 - ACL token for accessing Consul
-- Default value: *none*
+- Default value: *b4c0ffee-dc45-4a45-8379-3d1198bfea1a*
 
 ### `vault_log_level`
 
@@ -209,7 +224,7 @@ The role defines variables in `defaults/main.yml`:
 - Configures the [default lease duration](https://www.vaultproject.io/docs/config/#default_lease_ttl) for tokens and secrets.
 - Default value: `768h` (32 days)
 
-### `vault_main_config`
+### `vault_core_config`
 
 - Main configuration file name (full path)
 - Default value: `"{{ vault_config_path }}/vault_main.hcl"`
@@ -217,21 +232,6 @@ The role defines variables in `defaults/main.yml`:
 ### `vault_listener_template`
 - Vault listener configuration template file
 - Default value: *vault_listener.hcl.j2*
-
-### `vault_backend`
-- Which storage backend should be selected, choices are: consul, file and mysql
-- Default value: *consul*
-
-### `vault_backend_consul`
-
-- Backend consul template filename
-- Default value: *backend_consul.j2*
-
-### `vault_backend_file`
-
-- Backend file template filename
-- Default value: *backend_file.j2*
-
 
 ### `vault_cluster_address`
 
@@ -440,12 +440,12 @@ differences across distributions:
 
 ### `vault_enable_logrotate`
 
-- Enable logrotation for systemd based systems
+- Enable log rotation for systemd based systems
 - Default value: *false*
 
 ### `vault_logrotate_freq`
 
-- Determines how frequently to rotate vault logs
+- Determines Vault log rotation frequency
 - Default value: *7*
 
 ### `vault_logrotate_template`
@@ -466,7 +466,7 @@ encountered issues which are resolved by installing the correct dependencies.
 ### `gtar`
 
 Ansible requires GNU tar and this role performs some local use of the
-unarchive module, so ensure that your system has `gtar` installed.
+*unarchive* module, so ensure that your system has the `gtar` binary installed.
 
 ### Python netaddr
 
@@ -490,39 +490,24 @@ You can also pass variables in using the `--extra-vars` option to the
 `ansible-playbook` command:
 
 ```
-ansible-playbook -i hosts site.yml --extra-vars "vault_datacenter=maui"
+ansible-playbook -i hosts site.yml --extra-vars "vault_datacenter=dc1"
 ```
 
-Specify a template file with a different backend definition
-(see `templates/backend_consul.j2`):
+For example, specify a template file with a different storage backend definition
+(see `templates/vault_storage_backend_*.j2` for more details):
 
 ```
-ansible-playbook -i hosts site.yml --extra-vars "vault_backed=backend_file.j2"
+$ ansible-playbook \
+  -i hosts \
+  site.yml \
+  --extra-vars "vault_storage_backend=vault_storage_backend_file.j2"
 ```
 
-You need to make sure that the template file `backend_file.j2` is in the
-role directory for this to work.
+> NOTE: Ensure that the template file `vault_storage_backend_*.j2` exists in the role directory for this to work.
 
 ### Vagrant and VirtualBox
 
-See `examples/README_VAGRANT.md` for details on quick Vagrant deployments
-under VirtualBox for testing, etc.
-
-## example virtualBox playbook
-example playbook for a file based  vault instance.
-
-```
-- hosts: all
-  gather_facts: True
-  become: true
-  vars:
-    vault_backend: file
-    vault_cluster_disable: True
-    vault_log_level: debug
-  roles:
-    - vault
-
-```
+See `examples/README_VAGRANT.md` for details on quick Vagrant deployments under VirtualBox for testing, etc.
 
 ## Vault Enterprise
 
@@ -534,65 +519,65 @@ variable. Attempts to download the package from `vault_zip_url` if zip is not fo
 
 ### `vault_enterprise_premium`
 
-- Set to True if using premium binary. Basically just includes "+prem" in "vault_version" var
+- Set to *true* if using Vault Enterprise Premium binary; doing so includes "+prem" in the `vault_version` variable value
 - Default value: *False*
 
-## Vault Enterprise with HSM
+## Vault Enterprise with HSM Support
 
-The role can configure HSM based instances. Make sure to reference the [HSM support page](https://www.vaultproject.io/docs/configuration/seal/index.html) and take notice of the [behavior changes](https://www.vaultproject.io/docs/enterprise/hsm/behavior.html#initialization) after HSM is installed.
+The role can configure HSM based Vault Enterprise instances. Make sure to reference the [HSM support page](https://www.vaultproject.io/docs/configuration/seal/index.html) and take notice of the [behavior changes](https://www.vaultproject.io/docs/enterprise/hsm/behavior.html#initialization) after HSM is installed.
 
 ### `vault_enterprise_premium_hsm`
 
-- Set to True if using premium hsm binary. Basically just includes ".hsm" in "vault_version" var
-- Default value: *False*
+- Set to *true* if using Vault Enterprise Premium + HSM binary; doing so includes ".hsm" in the `vault_version` variable value
+- Default value: *false*
 
-### `vault_hsm_app`
+### `vault_seal_pkcs11`
 
-- Set which cryptography app to use.
-- Default value: *pkcs11*
+- Set to *true* to enable PKCS#11 (Hardware Security Module/HSM) based seal
+- Default value: *false*
 
-### `vault_backend_seal`
+### `vault_seal_pkcs11_template`
 
-- Backend seal template filename
-- Default value: *vault_backend_seal.j2*
+- pkcs11 seal template filename
+- Default value: *vault_seal_pkcs11.j2*
 
-### `vault_seal_lib`
+### `vault_seal_pkcs11_lib`
 
-- Set to the absolute path of the HSM library vault will call
-- Default value: */lib64/hsmlibrary.so*
+- Set to the absolute path of the HSM PKCS#11 library vault will use for communication with th eHSM
+- Default value: */lib64/hsm-vendor-library.so*
 
-### `vault_seal_pin`
+### `vault_seal_pkcs11_pin`
 
 - The PIN for login. May also be specified by the VAULT_HSM_PIN environment variable. If set via the environment variable, Vault will obfuscate the environment variable after reading it, and it will need to be re-set if Vault is restarted.
 - Default value: *12345*
 
-### `vault_seal_key_label`
+### `vault_seal_pkcs11_key_label`
 
 - The label of the key to use. If the key does not exist and generation is enabled, this is the label that will be given to the generated key. May also be specified by the VAULT_HSM_KEY_LABEL environment variable.
 - Default value: *vault-hsm-key*
 
-### `vault_seal_generate_key`
+### `vault_seal_pkcs11_generate_key`
 
 - If no existing key with the label specified by key_label can be found at Vault initialization time, instructs Vault to generate a key. This is a boolean expressed as a string (e.g. "true"). May also be specified by the VAULT_HSM_GENERATE_KEY environment variable. Vault may not be able to successfully generate keys in all circumstances, such as if proprietary vendor extensions are required to create keys of a suitable type.
 - Default value: *false*
 
-### `vault_seal_key_mechanism`
+### `vault_seal_pkcs11_key_mechanism`
 
 -  Do not change this unles you know you need to. The encryption/decryption mechanism to use, specified as a decimal or hexadecimal (prefixed by 0x) string. May also be specified by the VAULT_HSM_MECHANISM environment variable.
 - Default value: *''*
 - Example for RSA: *0x0009*
 
-### `vault_seal_token_label`
+### `vault_seal_pkcs11_token_label`
 
 - The slot token label to use. May also be specified by the VAULT_HSM_TOKEN_LABEL environment variable. This label will only be applied when `vault_softcard_enable` is true.
 - Default value: *''*
 
-### `vault_softcard_enable`
+### `vault_seal_pkcs11_softcard_enable`
 
-- Enable if you plan to use a softcard on your HSM.
+- Enable if you plan to use a softcard with your HSM
 - Default value: *false*
 
-### `vault_seal_slot`
+### `vault_seal_pkcs11_slot`
 
 - The slot number to use, specified as a string (e.g. "0"). May also be specified by the VAULT_HSM_SLOT environment variable. This label will only be applied when `vault_softcard_enable` is false (default).
 - Default value: *0*
@@ -601,44 +586,44 @@ The role can configure HSM based instances. Make sure to reference the [HSM supp
 
 This feature enables operators to delegate the unsealing process to Google Key Management System Cloud to ease operations in the event of partial failure and to aid in the creation of new or ephemeral clusters.
 
-This Auto-unseal mechanism is Open Source in Vault 1.0 but would require Enterprise binaries for any earlier version.
+> **NOTE**: The auto unseal mechanism is available in Vault open source version 1.0.0 and beyond, but requires Enterprise binaries for any previous versions.
 
-### `vault_gkms`
+### `vault_seal_gcpkms`
 
-- Set to True to enable Google Cloud KMS Auto-Unseal.
+- Set to `true` to enable Google Cloud Platform KMS based auto unseal
 - Default value: *false*
 
-### `vault_backend_gkms`
+### `vault_seal_gcpkms_template`
 
-- Backend seal template filename
-- Default value: *vault_backend_gkms.j2*
+- gcpksm seal template filename
+- Default value: *vault_seal_gcpkms.j2*
 
-### `vault_gkms_project`
+### `vault_seal_gcpkms_project`
 
-- GCP Project where the key reside.
+- GCP Project where the key for unsealing resides
 - Default value: *''*
 
-### `vault_gkms_credentials_src_file`
+### `vault_seal_gcpkms_credentials_src_file`
 
-- User-specified source directory for GCP Credential on Ansible control node.
+- User-specified source directory for GCP Credential on Ansible control host
 - Default value: *''*
 
-### `vault_gkms_credentials`
+### `vault_seal_gcpkms_credentials`
 
 - Path to GCP credential on Vault server.
 - Default value: `/home/vault/vault-kms.json`
 
-### `vault_gkms_region`
+### `vault_seal_gcpkms_region`
 
 - GCP Region where the key reside.
 - Default value: *global*
 
-### `vault_gkms_key_ring`
+### `vault_seal_gcpkms_key_ring`
 
 - The id of the Google Cloud Platform KeyRing to which the key shall belong.
 - Default value: *vault*
 
-### `vault_gkms_crypto_key`
+### `vault_seal_gcpkms_crypto_key`
 
 - The CryptoKey's name. A CryptoKey's name must be unique within a location and match the regular expression [a-zA-Z0-9_-]{1,63}
 - Default value: *vault_key*
@@ -648,37 +633,37 @@ This Auto-unseal mechanism is Open Source in Vault 1.0 but would require Enterpr
 This feature enabled operators to delegate the unsealing process to AWS KMS to ease operations in the event of a partial failure and to
 aid in the creation of new or ephemeral clusters.
 
-### `vault_awskms`
+### `vault_seal_awskms`
 
 - Set to true to enable AWS KMS Auto-unseal
 - Default value: *false*
 
-### `vault_awskms_backend`
+### `vault_seal_awskms_template`
 
 - Backend seal template filename
-- Default value: *vault_backend_awskms.j2*
+- Default value: *vault_seal_awskms.j2*
 
-### `vault_awskms_region`
+### `vault_seal_awskms_region`
 
 - Which AWS KMS region to use
 - Default value: *us-east-1*
 
-### `vault_awskms_access_key`
+### `vault_seal_awskms_access_key`
 
 - The AWS Access Key to use for talking to AWS KMS
 - Default value: *EXAMPLE_KEY*
 
-### `vault_awskms_secret_key`
+### `vault_seal_awskms_secret_key`
 
 - The AWS Secret Key ID to use for takling to AWS KMS
 - Default value: *EXAMPLE_SECRET_ID*
 
-### `vault_awskms_key_id`
+### `vault_seal_awskms_key_id`
 
 - The KMS Key ID to use for AWS KMS
 - Default value: *EXAMPLE_KMS_KEY_ID*
 
-### `vault_awskms_endpoint`
+### `vault_seal_awskms_endpoint`
 
 - The endpoint to use for KMS
 - Default value: *EXAMPLE_AWSKMS_ENDPOINT*

@@ -1,0 +1,14 @@
+seal "pkcs11" {
+  lib = "{{ vault_seal_pkcs11_lib }}"
+{% if vault_seal_pkcs11_softcard_enable -%}
+	token_label	= "{{ vault_seal_pkcs11_token_label }}"
+{% else -%}
+  slot = "{{ vault_seal_pkcs11_slot }}"
+{% endif -%}
+  pin = "{{ vault_seal_pkcs11_pin }}"
+  key_label = "{{ vault_seal_pkcs11_key_label }}"
+	generate_key = "{{ vault_seal_pkcs11_generate_key }}"
+{% if vault_seal_pkcs11_key_mechanism != '' -%}
+  mechanism = "{{ vault_seal_pkcs11_key_mechanism }}"
+{% endif -%}
+}

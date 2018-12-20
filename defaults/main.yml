@@ -3,10 +3,10 @@
 
 ## Core
 
-### Package
+### Binary package
 vault_version: "{{ lookup('env','VAULT_VERSION') | default('1.0.0', true) }}{{'+prem' if vault_enterprise_premium else '' }}{{'.hsm' if vault_enterprise_premium_hsm else '' }}"
 vault_architecture_map:
-  # this first entry seems... redundant (but it's required for reasons)
+  ##### this first entry seems redundant, but it's required (for reasons)
   amd64: amd64
   x86_64: amd64
   armv7l: arm
@@ -18,88 +18,57 @@ vault_shasums: "vault_{{ vault_version }}_SHA256SUMS"
 vault_zip_url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_{{ vault_os }}_{{ vault_architecture }}.zip"
 vault_checksum_file_url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version}}_SHA256SUMS"
 
-### Install Method
+### Install method
 vault_install_remotely: false
 
-### Paths
+### Filesystem paths
 vault_bin_path: /usr/local/bin
 vault_config_path: /etc/vault.d
 vault_data_path: /var/vault
 vault_log_path: /var/log/vault
 vault_run_path: /var/run/vault
 
-### System user and group
+### System user and group configuration
 vault_manage_user: true
 vault_user: vault
 vault_manage_group: false
 vault_group: bin
-
-### Logging
-vault_enable_logrotate: false
-vault_logrotate_freq: 7
-vault_logrotate_template: vault_logrotate.j2
-
-### Vault settings
 vault_group_name: vault_instances
+
+## Core congfiguration
+##### NOTE: vault_redirect_address is kept for backward compatibility but is deprecated!
+vault_api_addr: "{{ vault_protocol }}://{{ vault_redirect_address | default(hostvars[inventory_hostname]['ansible_'+vault_iface]['ipv4']['address']) }}:{{ vault_port }}"
+vault_cluster_disable: false
+vault_cluster_address: "{{ hostvars[inventory_hostname]['ansible_'+vault_iface]['ipv4']['address'] }}:{{ (vault_port | int) + 1}}"
+vault_cluster_addr: "{{ vault_protocol }}://{{ vault_cluster_address }}"
+vault_max_lease_ttl: "768h"
+vault_default_lease_ttl: "768h"
+vault_ui: "{{ lookup('env', 'VAULT_UI') | default(false, true) }}"
+
+## Listener configuration
 vault_cluster_name: dc1
 vault_datacenter: dc1
 vault_log_level: "{{ lookup('env','VAULT_LOG_LEVEL') | default('info', true) }}"
 vault_syslog_enable: true
 vault_iface: "{{ lookup('env','VAULT_IFACE') | default('eth1', true) }}"
 vault_address: "{{ hostvars[inventory_hostname]['ansible_'+vault_iface]['ipv4']['address'] }}"
-vault_ui: "{{ lookup('env', 'VAULT_UI') | default(false, true) }}"
-
 vault_port: 8200
 vault_node_name: "{{ inventory_hostname_short }}"
-vault_main_config: "{{ vault_config_path }}/vault_main.hcl"
-vault_listener_template: vault_listener.hcl.j2
 
-#### Vault storage / backend.
-vault_backend: consul
-vault_backend_consul: vault_backend_consul.j2
-vault_backend_file: vault_backend_file.j2
-
-vault_cluster_disable: false
-vault_cluster_address: "{{ hostvars[inventory_hostname]['ansible_'+vault_iface]['ipv4']['address'] }}:{{ (vault_port | int) + 1}}"
-vault_cluster_addr: "{{ vault_protocol }}://{{ vault_cluster_address }}"
-# vault_redirect_address is kept for backward compatibility but is deprecated
-vault_api_addr: "{{ vault_protocol }}://{{ vault_redirect_address | default(hostvars[inventory_hostname]['ansible_'+vault_iface]['ipv4']['address']) }}:{{ vault_port }}"
-
-vault_max_lease_ttl: "768h"
-vault_default_lease_ttl: "768h"
-
-### Consul
-vault_consul: 127.0.0.1:8500
-vault_consul_path: vault
-vault_consul_service: vault
-vault_consul_scheme: http
-# vault_consul_token:
-
-### Init templates
-vault_bsdinit_template: vault_bsdinit.j2
-vault_sysvinit_template: vault_sysvinit.j2
-vault_debian_init_template: vault_debian.init.j2
-vault_systemd_template: vault_systemd.service.j2
-
-## TLS
-
-# at the end of the role there's a API Reachability check if you rely on
-# self-signed certificates you might need to change the below to false
+### TLS
+vault_tls_disable: "{{ lookup('env','VAULT_TLS_DISABLE') | default(1, true) }}"
+##### NOTE: At role conclusion there is an API Reachability check; if you rely on
+##### self-signed certificates, you might need to change the following to: false
 validate_certs_during_api_reachable_check: true
-
 vault_tls_config_path: "{{ lookup('env','VAULT_TLS_DIR') | default('/etc/vault/tls', true) }}"
 vault_tls_src_files: "{{ lookup('env','VAULT_TLS_SRC_FILES') | default(role_path+'/files', true) }}"
-
-vault_tls_disable: "{{ lookup('env','VAULT_TLS_DISABLE') | default(1, true) }}"
 vault_tls_gossip: "{{ lookup('env','VAULT_TLS_GOSSIP') | default(0, true) }}"
-
 vault_protocol: "{% if vault_tls_disable %}http{% else %}https{% endif %}"
 vault_tls_cert_file: "{{ lookup('env','VAULT_TLS_CERT_FILE') | default('vault.crt', true) }}"
 vault_tls_key_file: "{{ lookup('env','VAULT_TLS_KEY_FILE') | default('vault.key', true) }}"
 vault_tls_ca_file: "{{ lookup('env','VAULT_TLS_CA_CRT') | default('ca.crt', true) }}"
-# /etc/pki/tls/certs/server.crt is distribution-specific/not a good default
-# a distribution-specific play to link into expected destination is preferred
-
+##### /etc/pki/tls/certs/server.crt is distribution-specific/not a good default
+##### a distribution-specific play to link into expected destination is preferred
 vault_tls_min_version: "{{ lookup('env','VAULT_TLS_MIN_VERSION') | default('tls12', true) }}"
 vault_tls_cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA"
 vault_tls_prefer_server_cipher_suites: "{{ lookup('env','VAULT_TLS_PREFER_SERVER_CIPHER_SUITES') | default('false', true) }}"
@@ -107,37 +76,70 @@ vault_tls_files_remote_src: false
 vault_tls_require_and_verify_client_cert: false
 vault_tls_disable_client_certs: false
 
-## Vault Enterprise
+## Storage backend configuration
+vault_storage_backend: consul
+vault_storage_backend_consul: vault_storage_backend_consul.j2
+vault_storage_backend_file: vault_storage_backend_file.j2
+vault_storage_backend_mysql: vault_storage_backend_mysql.j2
 
+### Consul storage backend configuration
+vault_consul: 127.0.0.1:8500
+vault_consul_path: vault
+vault_consul_service: vault
+vault_consul_scheme: http
+vault_consul_token: b4c0ffee-dc45-4a45-8379-3d1198bfea1a
+
+## Configuration file templates
+vault_core_template: vault_core.hcl.j2
+vault_listener_template: vault_listener.hcl.j2
+vault_seal_template: vault_seal.hcl.j2
+vault_storage_backend_template: vault_storage_backend_consul
+
+### Initialization system templates
+vault_bsdinit_template: vault_bsdinit.j2
+vault_sysvinit_template: vault_sysvinit.j2
+vault_debian_init_template: vault_debian.init.j2
+vault_systemd_template: vault_systemd.service.j2
+
+## Configuration file targets
+vault_core_config: "{{ vault_config_path }}/core.hcl"
+vault_listener_config: "{{ vault_config_path }}/listener.hcl"
+vault_seal_config: "{{ vault_config_path }}/seal.hcl"
+vault_storage_backend_config: "{{ vault_config_path }}/storage_backend.hcl"
+
+### Logging configuration
+vault_enable_logrotate: false
+vault_logrotate_freq: 7
+vault_logrotate_template: vault_logrotate.j2
+
+## Vault Enterprise configuration
 vault_enterprise: "{{ lookup('env','VAULT_ENTERPRISE') | default(false, true) }}"
 vault_enterprise_pkg: "vault-enterprise_{{ vault_version }}_{{ vault_os }}_{{ vault_architecture }}.zip"
 vault_enterprise_shasums: "vault-enterprise_{{ vault_version }}_SHA256SUMS"
 vault_enterprise_premium: false
 
-## Vault HSM
+## PKCS#11/HSM seal configuration
 vault_enterprise_premium_hsm: false
-vault_hsm_app: pkcs11
-vault_backend_seal: vault_backend_seal.j2
-vault_seal_lib: /lib64/hsmlibrary.so
-vault_seal_pin: 12345
-vault_seal_key_label: vault-hsm-key
-vault_seal_generate_key: false
-vault_seal_key_mechanism: ''
-vault_seal_token_label: ''
-vault_seal_slot: 0
-vault_softcard_enable: false
-vault_telemetry_enabled: false
+vault_seal_pkcs11: vault_seal_pkcs11.j2
+vault_seal_pkcs11_lib: /lib64/hsm-vendor-library.so
+vault_seal_pkcs11_pin: 12345
+vault_seal_pkcs11_key_label: vault-hsm-key
+vault_seal_pkcs11_generate_key: false
+vault_seal_pkcs11_key_mechanism: ''
+vault_seal_pkcs11_token_label: ''
+vault_seal_pkcs11_slot: 0
+vault_seal_pkcs11_softcard_enable: false
 
-## Vault Google KMS - auto unseal
+## Google KMS auto unseal configuration
+vault_seal_gcpkms: false
+vault_seal_gcpkms_template: vault_seal_gcpkms.j2
+vault_seal_gcpkms_project: ''
+vault_seal_gcpkms_credentials_src_file: ''
+vault_seal_gcpkms_credentials: '/home/vault/vault-kms.json'
+vault_seal_gcpkms_region: 'global'
+vault_seal_gcpkms_key_ring: 'vault'
+vault_seal_gcpkms_regionkms_crypto_key: 'vault_key'
 
-vault_gkms: false
-vault_backend_gkms: vault_backend_gkms.j2
-vault_gkms_project: ''
-vault_gkms_credentials_src_file: ''
-vault_gkms_credentials: '/home/vault/vault-kms.json'
-vault_gkms_region: 'global'
-vault_gkms_key_ring: 'vault'
-vault_gkms_crypto_key: 'vault_key'
-
-## Vault AWS KMS - auto unseal
-vault_awskms_backend: vault_backend_awskms.j2
+## AWS KMS auto unseal configuration
+vault_seal_awskms: false
+vault_seal_awskms_template: vault_seal_awskms.j2

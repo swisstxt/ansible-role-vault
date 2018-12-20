@@ -1,6 +1,13 @@
 ## v2.1.1 (UNRELEASED)
 
 - AWS KMS seal support (thanks @jeffWelling)
+- Enable specifying different storage backends (thanks @snoby)
+- Refactored configuration, tasks, and templates to achieve:
+  - consistent naming for seals, storage backends, and their templates
+  - naming in line with values as documented in Vault core documentation
+  - missing conditionals for seal types
+  - missing templates
+  - removing config from listener for granularity and independence
 - Update documentation
 
 ## v2.1.0

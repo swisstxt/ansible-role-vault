@@ -41,7 +41,7 @@ start() {
         [ -f $PID_FILE ] && rm $PID_FILE
         daemon --user={{ vault_user }} \
             --pidfile="$PID_FILE" \
-            "$VAULT" server -config={{ vault_main_config }} {% if vault_log_level is defined %}-log-level={{ vault_log_level | lower }}{% endif %} &
+            "$VAULT" server -config=$CONFIG {% if vault_log_level is defined %}-log-level={{ vault_log_level | lower }}{% endif %} &
         retcode=$?
         touch /var/lock/subsys/vault
         return $retcode
@@ -52,10 +52,8 @@ stop() {
         if ("${VAULT}" info 2>/dev/null | grep -q 'server = false' 2>/dev/null) ; then
             "$VAULT" leave
         fi
-
         mkpidfile
         killproc $KILLPROC_OPT $VAULT -9
-
         retcode=$?
         rm -f /var/lock/subsys/vault $PID_FILE
         return $retcode

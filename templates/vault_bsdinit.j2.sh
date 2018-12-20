@@ -30,7 +30,7 @@ vault_start() {
     for user in ${vault_users}; do
         mkdir /var/run/vault
         chown -R "{{ vault_user }}:{{ vault_group }}" /var/run/vault/
-        su -m "${user}" -c "{{ vault_bin_path }}/vault server -config={{ vault_main_config }} {% if vault_log_level is defined %}-log-level={{ vault_log_level | lower }}{% endif %}&"
+        su -m "${user}" -c "{{ vault_bin_path }}/vault server -config={{ vault_core_config }} {% if vault_log_level is defined %}-log-level={{ vault_log_level | lower }}{% endif %}&"
     done
 }
 

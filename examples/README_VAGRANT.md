@@ -72,6 +72,22 @@ The role can install Vault Enterprise based server instances.
 
 Place the Vault Enterprise zip archive into `{{ role_path }}/files` and set `vault_enterprise: true` or use the `VAULT_ENTERPRISE="true"` environment variable.
 
+## Example VirtualBox Playbook
+
+Here's an example playbook for a file based Vault instance.
+
+```
+- hosts: all
+  gather_facts: True
+  become: true
+  vars:
+    vault_storage_backend: file
+    vault_cluster_disable: True
+    vault_log_level: debug
+  roles:
+    - vault
+```
+
 ## Notes
 
 1. This project functions with the following software versions:

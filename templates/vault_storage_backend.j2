@@ -1,0 +1,8 @@
+{# Enable configured storage backend #}
+{% if vault_storage_backend == 'consul' %}
+  {% include vault_storage_backend_consul with context %}
+{% elif vault_storage_backend == 'file' %}
+  {% include vault_storage_backend_file with context %}
+{% elif vault_storage_backend == 'mysql' %}
+  {% include vault_storage_backend_mysql with context %}
+{% endif %}

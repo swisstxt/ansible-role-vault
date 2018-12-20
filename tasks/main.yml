@@ -89,24 +89,50 @@
   include: ../tasks/tls.yml
   when: vault_tls_disable == 0
 
-- name: "Copy over GCP Credentials for Auto Unseal"
-  copy:
-    src: "{{ vault_gkms_credentials_src_file }}"
-    dest: "{{ vault_gkms_credentials }}"
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
-    mode: "0600"
-  when: vault_gkms | bool
-
-- name: Listener configuration
+- name: Core configuration
   template:
-    src: "{{ vault_listener_template }}"
-    dest: "{{ vault_main_config }}"
+    src: "{{ vault_core_template }}"
+    dest: "{{ vault_core_config }}"
     owner: "{{ vault_user }}"
     group: "{{ vault_group }}"
     mode: "0400"
   notify: Restart vault
 
+- name: Listener configuration
+  template:
+    src: "{{ vault_listener_template }}"
+    dest: "{{ vault_listener_config }}"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: "0400"
+  notify: Restart vault
+
+- name: Seal configuration
+  template:
+    src: "{{ vault_seal_template }}"
+    dest: "{{ vault_seal_config }}"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: "0400"
+  notify: Restart vault
+
+- name: Storage backend configuration
+  template:
+    src: "{{ vault_storage_backend_template }}"
+    dest: "{{ vault_storage_backend_config }}"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: "0400"
+  notify: Restart vault
+
+- name: "Install GCP credentials for gcpkms auto unseal"
+  copy:
+    src: "{{ vault_seal_gcpkms_credentials_src_file }}"
+    dest: "{{ vault_seal_gcpkms_credentials }}"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: "0600"
+  when: vault_seal_gcpkms | bool
 
 - name: BSD init script
   template:
