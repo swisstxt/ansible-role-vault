@@ -108,6 +108,13 @@
     trim_blocks: false
   notify: Restart vault
 
+- name: Configure Environment Variables for local Vault Client
+  template:
+    src: vault.sh.j2
+    dest: "/etc/profile.d/vault.sh"
+    owner: root
+    group: root
+    mode: "0644"
 
 - name: BSD init script
   template:
