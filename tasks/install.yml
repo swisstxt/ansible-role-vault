@@ -66,6 +66,7 @@
     group: "{{ vault_group }}"
     mode: "0755"
   tags: installation
+  notify: Restart vault
 
 - name: Cleanup
   local_action: file path="{{ item }}" state="absent"

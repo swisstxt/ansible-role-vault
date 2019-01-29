@@ -55,6 +55,7 @@
     group: "{{ vault_group }}"
     mode: "0755"
   tags: installation
+  notify: Restart vault
 
 - name: "[Enterprise] Remove {{ role_path }}/files/vault"
   local_action: file path="{{ item }}" state="absent"
