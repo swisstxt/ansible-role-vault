@@ -85,7 +85,7 @@ vault_systemd_template: vault_systemd.service.j2
 
 # at the end of the role there's a API Reachability check if you rely on
 # self-signed certificates you might need to change the below to false
-validate_certs_during_api_reachable_check: true
+vault_validate_certs_during_api_reachable_check: true
 
 vault_tls_config_path: "{{ lookup('env','VAULT_TLS_DIR') | default('/etc/vault/tls', true) }}"
 vault_tls_src_files: "{{ lookup('env','VAULT_TLS_SRC_FILES') | default(role_path+'/files', true) }}"
