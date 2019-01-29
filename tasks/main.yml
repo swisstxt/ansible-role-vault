@@ -184,9 +184,12 @@
     method: GET
     # 200 if initialized, unsealed, and active.
     # 429 is also OK for HA cluster (means standby + unsealed in HA)
+    # 472 is also OK for data recovery mode (Enterprise feature)
     # 473 is also OK for Performance Standby (Enterprise feature)
+    # 501 if not initialized
+    # 503 if sealed
     # See: https://www.vaultproject.io/api/system/health.html
-    status_code: "{{ vault_cluster_disable | ternary('200', '200, 429, 473') }}"
+    status_code: "{{ vault_cluster_disable | ternary('200,501,503', '200,429,472,473,501,503') }}"
     body_format: json
   register: check_result
   retries: 30
