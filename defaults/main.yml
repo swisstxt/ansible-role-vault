@@ -140,4 +140,6 @@ vault_gkms_key_ring: 'vault'
 vault_gkms_crypto_key: 'vault_key'
 
 ## Vault AWS KMS - auto unseal
+
+vault_awskms: false
 vault_awskms_backend: vault_backend_awskms.j2
