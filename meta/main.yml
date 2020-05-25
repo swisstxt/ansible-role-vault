@@ -1,32 +1,32 @@
 ---
+# File: main.yml - Meta main
+
 galaxy_info:
   author: Brian Shumate
   description: HashiCorp Vault server role
-  company:
-  license: license BSD
-  min_ansible_version: 2.5.0.0
+  company: Brian Shumate
+  license: BSD
+  min_ansible_version: 2.7
+
   platforms:
     - name: EL
       versions:
         - 6
         - 7
-    # - name: SmartOS
-    #   versions:
-    #   - all
-    #   - any
-    # - name: FreeBSD
-    #   versions:
-    #   - 11.0
+        - 8
     - name: Ubuntu
       versions:
         - xenial
         - bionic
     - name: Debian
       versions:
+        - buster
         - jessie
         - stretch
-    - galaxy_tags:
-        - networking
-        - security
-        - system
+
+  galaxy_tags:
+    - networking
+    - security
+    - system
+
 dependencies: []

@@ -6,6 +6,8 @@ disable_clustering = "{{ vault_cluster_disable }}"
 cluster_addr = "{{ vault_cluster_addr }}"
 api_addr = "{{ vault_api_addr }}"
 
+plugin_directory = "{{ vault_plugin_path }}"
+
 listener "tcp" {
   address = "{{ vault_address }}:{{ vault_port }}"
   cluster_address = "{{ vault_cluster_address }}"
@@ -29,32 +31,44 @@ listener "tcp" {
 }
 
 {#
-  Select which backend you want generated and placed
+  Select which storage backend you want generated and placed
   in the vault configuration file.
 #}
 {% if vault_backend == 'consul' -%}
-  {% include vault_backend_consul with context %}
+  {% include vault_backend_consul with context -%}
+{% elif vault_backend == 'etcd' -%}
+  {% include vault_backend_etcd with context -%}
 {% elif vault_backend == 'file' -%}
-  {% include vault_backend_file with context %}
+  {% include vault_backend_file with context -%}
+{% elif vault_backend == 's3' -%}
+  {% include vault_backend_s3 with context -%}
+{% elif vault_backend == 'dynamodb' -%}
+  {% include vault_backend_dynamodb with context -%}
 {% elif vault_backend == 'mysql' -%}
-  {% include vault_backend_mysql with context %}
-{% endif -%}
+  {% include vault_backend_mysql with context -%}
+{% elif vault_backend == 'raft' -%}
+  {% include vault_backend_raft with context -%}
+{% endif %}
 
-{% if vault_ui %}
+{% if vault_ui -%}
 ui = {{ vault_ui | bool | lower }}
-{% endif -%}
+{% endif %}
 
 {% if vault_enterprise_premium_hsm | bool -%}
   {% include vault_backend_seal with context %}
-{% endif -%}
+{% endif %}
 
 {% if vault_gkms | bool -%}
   {% include vault_backend_gkms with context %}
-{% endif -%}
+{% endif %}
 
-{% if vault_awskms | bool %}
+{% if vault_awskms | bool -%}
   {% include vault_awskms_backend with context %}
-{% endif -%}
+{% endif %}
+
+{% if vault_azurekeyvault | bool -%}
+  {% include vault_azurekeyvault_backend with context %}
+{% endif %}
 
 {% if vault_telemetry_enabled | bool -%}
 telemetry {
@@ -63,6 +77,9 @@ telemetry {
   {% endif -%}
   {% if vault_statsd_address is defined %}
   statsd_address = "{{vault_statsd_address}}"
+  {% endif -%}
+  {% if vault_prometheus_retention_time is defined %}
+  prometheus_retention_time = "{{ vault_prometheus_retention_time }}"
   {% endif -%}
   {% if vault_telemetry_disable_hostname is defined %}
   disable_hostname = {{vault_telemetry_disable_hostname | bool | lower }}

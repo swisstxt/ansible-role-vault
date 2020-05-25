@@ -1,9 +1,7 @@
  # Vault
-
-[![Build Status](https://travis-ci.org/brianshumate/ansible-vault.svg?branch=master)](https://travis-ci.org/brianshumate/ansible-vault)
-[![Ansible Galaxy](https://img.shields.io/badge/galaxy-brianshumate.vault-blue.svg)](https://galaxy.ansible.com/brianshumate/vault/)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/brianshumate/ansible-vault.svg)](http://isitmaintained.com/project/brianshumate/ansible-vault "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/brianshumate/ansible-vault.svg)](http://isitmaintained.com/project/brianshumate/ansible-vault "Percentage of issues still open")
+[![Build Status](https://travis-ci.org/ansible-community/ansible-vault.svg?branch=master)](https://travis-ci.org/ansible-community/ansible-vault)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ansible-community/ansible-vault.svg)](http://isitmaintained.com/project/ansible-community/ansible-vault "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/ansible-community/ansible-vault.svg)](http://isitmaintained.com/project/ansible-community/ansible-vault "Percentage of issues still open")
 
 This Ansible role performs a basic [Vault](https://vaultproject.io/)
 installation, including filesystem structure and example configuration.
@@ -18,9 +16,12 @@ This role requires FreeBSD, or a Debian or RHEL based Linux distribution. It
 might work with other software versions, but does work with the following
 specific software and versions:
 
-* Ansible: 2.7.5
-* Vault: 1.0.2
-* Debian: 9
+* Ansible: 2.8.4
+* Vault: 1.4.0
+* Debian
+  - Debian 10 (buster)
+  - Debian 9 (stretch)
+  - Debian 8 (jessie)
 * FreeBSD 11
 * Ubuntu 18.04
 
@@ -32,12 +33,12 @@ The role defines variables in `defaults/main.yml`:
 
 ### `vault_version`
 
-- version to install
+- Version to install
   - Can be overridden with `VAULT_VERSION` environment variable
   - Will include "+prem" if vault_enterprise_premium=True
   - Will include ".hsm" if vault_enterprise_premium_hsm=True
 
-- Default value: 1.0.2
+- Default value: 1.4.0
 
 ### `vault_enterprise`
 
@@ -90,6 +91,11 @@ The role defines variables in `defaults/main.yml`:
 - Configuration file path
 - Default value: `/etc/vault.d`
 
+### `vault_plugin_path`
+
+- Path from where plugins can be loaded
+- Default value: `/usr/local/lib/vault/plugins`
+
 ### `vault_data_path`
 
 - Data path
@@ -120,6 +126,11 @@ The role defines variables in `defaults/main.yml`:
 - OS group name
 - Default value: bin
 
+### `vault_manage_group`
+
+- Should this role manage the vault group?
+- Default value: false
+
 ### `vault_group_name`
 
 - Inventory group name
@@ -140,42 +151,215 @@ The role defines variables in `defaults/main.yml`:
 - Enable vault web UI
 - Default value:  true
 
-### `vault_consul`
+## Storage Backend Variables
+
+### `vault_backend`
+- Which storage backend should be selected, choices are: consul, etcd, file, s3, and dynamodb
+- Default value: consul
+
+### `vault_backend_tls_src_files`
+
+- User-specified source directory for TLS files for storage communication
+- {{ vault_tls_src_files }}
+
+### `vault_backend_tls_config_path`
+
+- Path to directory containing backend tls config files
+- {{ vault_tls_config_path }}
+
+### `vault_backend_tls_cert_file`
+
+- Specifies the path to the certificate for backend communication (if supported).
+- {{ vault_tls_cert_file }}
+
+### `vault_backend_tls_key_file`
+
+- Specifies the path to the private key for backend communication (if supported).
+- {{ vault_tls_key_file }}
+
+### `vault_backend_tls_ca_file`
+
+- CA certificate used for backend communication (if supported). This defaults to system bundle if not specified.
+- {{ vault_tls_ca_file }}
+
+### Consul Storage Backend
+
+#### `vault_backend_consul`
+
+- Backend consul template filename
+- Default value: `backend_consul.j2`
+
+#### `vault_consul`
 
 - host:port value for connecting to Consul HA backend
 - Default value: 127.0.0.1:8500
 
-### `vault_consul_scheme`
+#### `vault_consul_scheme`
 
 - Scheme for Consul backend
 - Supported values: http, https
 - Default value: http
 
-### `vault_consul_path`
+#### `vault_consul_path`
 
 - Name of Vault's Consul K/V root path
 - Default value: vault
 
-### `vault_consul_service`
+#### `vault_consul_service`
 
 - Name of the Vault service to register in Consul
 - Default value: vault
 
-### `vault_consul_token`
+#### `vault_consul_token`
 
 - ACL token for accessing Consul
 - Default value: none
+
+### etcd Storage Backend
+
+#### vault_etcd
+
+- Address of etcd storage
+- Default value: 127.0.0.1:2379
+
+#### vault_etcd_api:
+
+- API version
+- Default value: v3
+
+#### vault_etcd_path
+
+- Path for Vault storage
+- Default value: /vault/
+
+#### vault_etcd_discovery_srv
+
+- Discovery server
+- Default value: none
+
+#### vault_etcd_discovery_srv_name
+
+- Discovery server name
+- Default value: none
+
+#### vault_etcd_ha_enabled
+
+- Use storage for High Availability mode
+- Default value: false
+
+#### vault_etcd_sync
+
+- Use etcdsync
+- Default value: true
+
+#### vault_etcd_username
+
+- Username
+- Default value: none
+
+#### vault_etcd_password
+
+- Password
+- Default value: none
+
+#### vault_etcd_request_timeout
+
+-Request timeout
+- Default value: "5s"
+
+#### vault_etcd_lock_timeout
+
+- Lock timeout
+- Default value: "15s"
+
+### File Storage Backend
+
+#### `vault_backend_file`
+
+- Backend file template filename
+- Default value: `backend_file.j2`
+
+### DynamoDB Storage Backend
+
+For additional documentation for the various options available, see the
+[Vault documentation](https://www.vaultproject.io/docs/configuration/storage/dynamodb.html)
+for the DynamoDB storage backend.
+
+#### `vault_dynamodb`
+
+- Specifies an alternative DynamoDB endpoint.
+- Default value: none
+  - Can be overridden with the environment variable `AWS_DYNAMODB_ENDPOINT`.
+
+#### `vault_dynamodb_table`
+
+- Name of the DynamoDB table used to store Vault data.
+  - If the table does not already exist, it will be created during
+    initialization.
+- Default value: `"vault-dynamodb-backend"`
+  - Can be overridden with the environment variable `AWS_DYNAMODB_TABLE`.
+
+#### `vault_dynamodb_ha_enabled`
+
+- Whether High Availability is enabled for this storage backend.
+- Default value: `"false"`
+  - Can be overridden with the environment variable `DYNAMODB_HA_ENABLED`.
+    - The missing `AWS_` prefix is not a typo, this particular variable is not
+      prefixed in both the Vault documentation and source code.
+
+#### `vault_dynamodb_max_parallel`
+
+- The maximum number of concurrent requests.
+- Default value: `"128"`
+
+#### `vault_dynamodb_region`
+
+- The AWS region.
+- Default value: `us-east-1`
+  - Can be overridden with the environment variable `AWS_DEFAULT_REGION`
+
+#### `vault_dynamodb_read_capacity`
+
+- Number of reads per second to provision for the table.
+- Only used during table creation, has no effect if the table already exists.
+- Default value: `5`
+  - Can be overridden with the environment variable `AWS_DYNAMODB_READ_CAPACITY`.
+
+#### `vault_dynamodb_write_capacity`
+
+- Number of writes per second to provision for the table.
+- Only used during table creation, has no effect if the table already exists.
+- Default value: `5`
+  - Can be overridden with the environment variable `AWS_DYNAMODB_WRITE_CAPACITY`.
+
+#### `vault_dynamodb_access_key`
+
+- AWS access key to use for authentication.
+- Default value: none
+  - Can be overridden with the environment variable `AWS_ACCESS_KEY_ID`
+- Leaving both this and `vault_dynamodb_secret_key` blank will cause Vault to
+  attempt to retrieve the credentials from the AWS metadata service.
+
+#### `vault_dynamodb_secret_key`
+
+- AWS secret key used for authentication.
+- Default value: none
+  - Can be overridden with the environment variable `AWS_SECRET_ACCESS_KEY`
+- Leaving both this and `vault_dynamodb_access_key` blank will cause Vault to
+  attempt to retrieve the credentials from the AWS metadata service.
+
+#### `vault_dynamodb_session_token`
+
+- AWS session token.
+- Default value: none
+  - Can be overridden with the environment variable `AWS_SESSION_TOKEN`
 
 ### `vault_log_level`
 
 - [Log level](https://www.consul.io/docs/agent/options.html#_log_level)
   - Supported values: trace, debug, info, warn, err
 - Default value: info
-
-### `vault_syslog_enable`
-
-- Log to syslog (not yet impemented)
-- Default value: true
+- Requires Vault version 0.11.1 or higher
 
 ### `vault_iface`
 
@@ -193,11 +377,6 @@ The role defines variables in `defaults/main.yml`:
 - TCP port number to on which to listen
 - Default value: 8200
 
-### `vault_node_name`
-
-- Short node name
-- Default value: `"{{ inventory_hostname_short }}"`
-
 ### `vault_max_lease_ttl`
 
 - Configures the [maximum possible lease duration](https://www.vaultproject.io/docs/config/#max_lease_ttl) for tokens and secrets.
@@ -213,23 +392,10 @@ The role defines variables in `defaults/main.yml`:
 - Main configuration file name (full path)
 - Default value: `"{{ vault_config_path }}/vault_main.hcl"`
 
-### `vault_listener_template`
-- Vault listener configuration template file
-- Default value: *vault_listener.hcl.j2*
+### `vault_main_configuration_template`
 
-### `vault_backend`
-- Which storage backend should be selected, choices are: consul, file and mysql
-- Default value: consul
-
-### `vault_backend_consul`
-
-- Backend consul template filename
-- Default value: `backend_consul.j2`
-
-### `vault_backend_file`
-
-- Backend file template filename
-- Default value: `backend_file.j2`
+- Vault main configuration template file
+- Default value: *vault_main_configuration.hcl.j2*
 
 ### `vault_cluster_address`
 
@@ -255,7 +421,7 @@ The role defines variables in `defaults/main.yml`:
 ### `validate_certs_during_api_reachable_check`
 
 - Disable Certificate Validation for API reachability check
-- Default value: false
+- Default value: true
 
 ### `vault_tls_config_path`
 
@@ -270,7 +436,7 @@ The role defines variables in `defaults/main.yml`:
 
 ### `vault_tls_gossip`
 
-- Enable TLS Gossip to Consul Backend
+- Enable TLS Gossip to storage (if supported)
 - Default value: 0
 
 ### `vault_tls_src_files`
@@ -311,7 +477,7 @@ The role defines variables in `defaults/main.yml`:
 ### `vault_tls_cipher_suites`
 
 - [Comma-separated list of supported ciphersuites](https://www.vaultproject.io/docs/configuration/listener/tcp.html#tls_cipher_suites)
-- Default value: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA"
+- Default value: ""
 
 ### `vault_tls_prefer_server_cipher_suites`
 
@@ -329,6 +495,11 @@ The role defines variables in `defaults/main.yml`:
 - [Disable requesting for client certificates](https://www.vaultproject.io/docs/configuration/listener/tcp.html#tls_disable_client_certs)
 - Default value: false
 
+### `vault_tls_copy_keys`
+
+- Copy TLS files from src to dest
+- Default value: true
+
 ### `vault_tls_files_remote_src`
 
 - Copy from remote source if TLS files are already on host
@@ -336,7 +507,7 @@ The role defines variables in `defaults/main.yml`:
 
 ### `vault_bsdinit_template`
 - BSD init template file
-- Default value: `vault_bsdinit.j2`
+- Default value: `vault_service_bsd_init.j2`
 
 ### `vault_sysvinit_template`
 - SysV init  template file
@@ -344,15 +515,18 @@ The role defines variables in `defaults/main.yml`:
 
 ### `vault_debian_init_template`
 - Debian init template file
-- Default value: `vault_debian.init.j2`
+- Default value: `vault_service_debian_init.j2`
 
 ### `vault_systemd_template`
 - Systemd service template file
-- Default value: `vault_systemd.service.j2`
+- Default value: `vault_service_systemd.j2`
 
 ### `vault_telemetry_enabled`
 - Enable [Vault telemetry](https://www.vaultproject.io/docs/configuration/telemetry.html)
-- If enabled, you must set *vault_statsite_address* or *vault_statsd_address* with a format of "FQDN:PORT"
+- If enabled, you must set at least one of the following parameters according to your telemetry provider:
+  - *vault_statsite_address* with a format of "FQDN:PORT"
+  - *vault_statsd_address* with a format of "FQDN:PORT"
+  - *vault_prometheus_retention_time* e.g: "30s" or "24h"
 - If enabled, optionally set *vault_telemetry_disable_hostname* to strip the hostname prefix from telemetry data
 - Default value: *false*
 
@@ -493,7 +667,7 @@ Specify a template file with a different backend definition
 (see `templates/backend_consul.j2`):
 
 ```
-ansible-playbook -i hosts site.yml --extra-vars "vault_backed=backend_file.j2"
+ansible-playbook -i hosts site.yml --extra-vars "vault_backend_file=backend_file.j2"
 ```
 
 You need to make sure that the template file `backend_file.j2` is in the
@@ -548,6 +722,8 @@ The role can configure HSM based instances. Make sure to reference the [HSM supp
 - Default value: pkcs11
 
 ### `vault_backend_seal`
+
+> NOTE: This seal will be migrated to the `pkcs11` seal and made consistent with the other seal types with respect to breaking naming changes soon.
 
 - Backend seal template filename
 - Default value: `vault_backend_seal.j2`
@@ -607,7 +783,7 @@ This Auto-unseal mechanism is Open Source in Vault 1.0 but would require Enterpr
 ### `vault_backend_gkms`
 
 - Backend seal template filename
-- Default value: `vault_backend_gkms.j2`
+- Default value: `vault_seal_gcpkms.j2`
 
 ### `vault_gkms_project`
 
@@ -652,7 +828,7 @@ aid in the creation of new or ephemeral clusters.
 ### `vault_awskms_backend`
 
 - Backend seal template filename
-- Default value: `vault_backend_awskms.j2`
+- Default value: `vault_seal_awskms.j2`
 
 ### `vault_awskms_region`
 
@@ -662,26 +838,65 @@ aid in the creation of new or ephemeral clusters.
 ### `vault_awskms_access_key`
 
 - The AWS Access Key to use for talking to AWS KMS
-- Default value: EXAMPLE_KEY
+- Default value: AWS_ACCESS_KEY_ID
 
 ### `vault_awskms_secret_key`
 
 - The AWS Secret Key ID to use for takling to AWS KMS
-- Default value: EXAMPLE_SECRET_ID
+- Default value: AWS_SECRET_ACCESS_KEY
 
 ### `vault_awskms_key_id`
 
 - The KMS Key ID to use for AWS KMS
-- Default value: EXAMPLE_KMS_KEY_ID
+- Default value: VAULT_AWSKMS_SEAL_KEY_ID
 
 ### `vault_awskms_endpoint`
 
 - The endpoint to use for KMS
-- Default value: EXAMPLE_AWSKMS_ENDPOINT
+- Default value: AWS_KMS_ENDPOINT
+
+## Vault Azure Key Vault Auto-unseal
+
+This feature enabled operators to delegate the unsealing process to AZURE Key Vaultto ease operations in the event of a partial failure and to aid in the creation of new or ephemeral clusters.
+
+### `vault_azurekeyvault`
+
+- Set to true to enable AZURE Key Vault Auto-unseal
+- Default value: false
+
+### `vault_backend_azurekeyvault`
+
+- Backend seal template filename
+- Default value: `vault_seal_azurekeyvault.j2`
+
+### `vault_azurekeyvault_client_id`
+
+- Application ID related to Service Principal Name for the Application used to connect to Azure
+- Default value: EXAMPLE_CLIENT_ID
+
+### `vault_azurekeyvault_client_secret`
+
+- Client Secret is the secret key attached to your Application
+- Default value: EXAMPLE_CLIENT_SECRET
+
+### `vault_azurekeyvault_tenant_id`
+
+- Tenant ID is your Directory ID in Azure
+- Default value: EXAMPLE_TENANT_ID
+
+### `vault_azurekeyvault_vault_name`
+
+- The name of the Vault which hosts the key
+- Default value: vault
+
+### `vault_azurekeyvault_key_name`
+
+- The key hosted in the Vault in Azure Key Vault
+- Default value: vault_key
 
 ## License
 
-BSD
+BSD-2-Clause
 
 ## Author Information
 

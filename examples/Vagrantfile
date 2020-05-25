@@ -6,7 +6,7 @@
 
 ANSIBLE_PLAYBOOK = ENV['ANSIBLE_PLAYBOOK'] || "site.yml"
 BOX_MEM = ENV['BOX_MEM'] || "2048"
-BOX_NAME =  ENV['BOX_NAME'] || "debian/stretch64"
+BOX_NAME =  ENV['BOX_NAME'] || "debian/buster64"
 VAULT_HOSTS = ENV['VAULT_HOSTS'] || "vagrant_hosts"
 LOGLEVEL = ENV['VAULT_LOGLEVEL'] || "info"
 VAGRANTFILE_API_VERSION = "2"
@@ -15,7 +15,7 @@ Vagrant.require_version ">= 1.5.0"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  # Configure one Vault node
+  # Configure one Vault server
   config.vm.define :vault do |vault_config|
     vault_config.vm.box = BOX_NAME
     vault_config.vm.network :private_network, ip: "10.1.42.240"

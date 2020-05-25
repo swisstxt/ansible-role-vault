@@ -1,3 +1,163 @@
+## v2.5.3
+- Add Prometheus telemetry support (thanks @bbayszczak)
+- Add tag check_vault to to Vault status debug task (thanks @NorthFuture)
+- Fixed indentation of vault config file (thanks @rasta-rocket)
+- Add RHEL 8 support (thanks @kwevers)
+
+## v2.5.2
+
+- Vault v1.3.2
+- Update documentation
+
+## v2.5.1
+
+- Vault v1.3.1
+- Add MySQL storage (thanks @ericsysmin)
+- Update status task (thanks @ericsysmin)
+- Add group creation task (thanks @karras)
+- Update documentation (thanks @ilpianista)
+- Update documentation
+
+## v2.5.0
+
+- Vault v1.3.1
+- Update documentation
+
+## v2.4.0
+
+- Vault v1.2.4
+- Restart after binary change (thanks @bbaassssiiee)
+- Use command for vault version in main tasks (thanks @bbaassssiiee)
+- Update API status check (thanks @bbaassssiiee)
+- Support Fedora (thanks @rbjorklin)
+- Update CONTRIBUTORS
+- Update documentation
+
+## v2.3.4
+
+- Vault v1.2.3
+- Fix s3 backend configuration and template (thanks @ebostijancic)
+- Update documentation
+
+## v2.3.3
+
+- Vault v1.2.2
+- Update documentation
+
+## v2.3.2
+
+- Fix Vault installation check (thanks @jpiron)
+- Update documentation
+
+## v2.3.0
+
+- Vault v1.2.0
+- Update documentation
+
+## v2.2.3
+
+- Vault v1.1.5
+- Add DynamoDB storage backend (thanks @chris-dudley)
+- Update CONTRIBUTORS
+- Update documentation
+
+## v2.2.2
+
+- Vault v1.1.4
+- Add support for backend tls configuration (thanks @rhenwood3995)
+- Fix template line break (thanks @fhemberger)
+- ansible_default_ipv4 interface used as default (thanks @fhemberger)
+- Update vault_home (thanks @zeridon)
+- Add s3 storage backend template (thanks @dvmonroe)
+- Update documentation (thanks @dvmonroe)
+- Update CONTRIBUTORS
+
+## v2.2.1
+
+- Resolve some task argument issues
+- Clean up line length a bit
+- Use Filesystem Storage Backend in Vagrant example playbook
+- Update Vagrantfile
+- Update documentation
+
+## v2.2.0
+
+- Clean up task items
+- Fixup Get installed Vault version for multiline/quotes
+- Update vault_home value (thanks @xeivieni)
+- Add plugin_dir configuration (thanks @vmwiz)
+- Fix: Force `/bin/bash` on Get Vault package checksum (local) (thanks @fleu42)
+
+## v2.1.9
+
+- Vault version 1.1.2
+- Feature: add etcd storage (thanks @cordula-grau)
+- Fix: Resolve deprecation warnings (thanks @cordula-grau)
+- Fix: Move become flag to required resources (thanks @cordula-grau)
+- Reposition some main variables
+- Remove `vault_tls_cipher_suites` values/fall back to Vault defaults
+- Remove unimplemented `vault_syslog_enable`
+- Rename `vault_listener_template` to `vault_main_configuration_template`
+  - Rename corresponding template file to `vault_main_configuration.hcl.j2`
+- Update documentation
+
+## v2.1.8
+
+- Vault version 1.1.1
+- Allow sealed state for standalone instance (thanks @kwevers)
+- Revert long line syntax change in main tasks (thanks @kwevers)
+- Ensure systemd is reloaded on unit changes (thanks @kwevers)
+- Add vault_bin_path to the PATH (thanks @kwevers)
+- Update documentation
+
+## v2.1.7
+
+- Minimum Ansible version to 2.7
+- Support install on Debian Testing (thanks @gfeun)
+- Update for E206 [lint]
+  - tasks/tls
+- Update for E201 [lint]
+  - tasks/main
+- Update for E504 [lint]
+  - tasks/install
+  - tasks/install_enterprise
+- Use bool filter in template conditionals
+- Consistent seal template filenames
+  - awskms seal (now named vault_seal_awskms.j2)
+  - azurekeyvault seal (now named `vault_seal_azurekeyvault.j2`)
+  - gcpkms seal template (now named `vault_seal_gcpkms.j2`)
+  - pkcs11 seal template (now named `vault_seal_pkcs11.j2`)
+- Consistent service template names
+  - BSD style init script (now named `vault_service_bsd_init.j2`)
+  - Debian style init script (now named `vault_service_debian_init.j2`)
+  - systemd unit (now named `vault_service_systemd.j2`)
+
+## v2.1.6
+
+- Resolve environment additions/create .bashrc (thanks @gfeun)
+- Update documentation
+- Update license
+- Update variables
+
+## v2.1.5
+
+- Vault v1.1.0
+- Add additional health responses to API reachability check (thanks @enqack)
+- VAULT_ADDR and VAULT_CACERT export in ~/.bashrc (thanks @planetrobbie)
+- Update documentation
+
+## v2.1.4
+
+- Replace Azure Key Vault variables to resolve #85
+- Tidy and reorganize main variables
+
+## v2.1.3
+
+- Vault v1.0.3
+- Skip certificate copy if desired (thanks @Fuochi-YNAP)
+- Skip health check if desired (thanks @Fuochi-YNAP)
+- Add Azure Key Auto Unseal configuration (thanks @nehrman)
+
 ## v2.1.2
 
 - Vault v1.0.2
@@ -333,7 +493,7 @@
 - Fix logging options (thanks @arledesma)
 - Update documentation
 
-## v1.3.0
+## v1.3.1
 
 - Add support for version specification via VAULT_VERSION environment variable
 - Renamed backend configuration template
@@ -440,7 +600,7 @@
 - Remove vars dir
 - Enable download once / copy many install
 
-## v1.0.3
+## v1.1.2
 
 - Move all vars to defaults
 - Documentation updates
